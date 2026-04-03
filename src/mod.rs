@@ -2,6 +2,7 @@
 // This file exposes all 15 spoofing modules
 
 // Core spoofing modules
+pub mod config;
 pub mod disk_serial;
 pub mod mac_address;
 pub mod motherboard;
@@ -19,12 +20,14 @@ pub mod driver_hooks;
 pub mod evasion;
 
 // Re-export commonly used functions for convenience
+pub use config::HwidConfig;
 pub use disk_serial::{spoof_disk_serial, generate_disk_serial, verify_disk_spoof};
 pub use mac_address::{spoof_mac_address, generate_mac_address, list_network_adapters};
 pub use motherboard::{spoof_motherboard, generate_motherboard_serial, generate_system_uuid};
 pub use system_uuid::spoof_system_uuid;
-pub use cpu_id::spoof_cpu_id;
+pub use cpu_id::{spoof_cpu_id, spoof_cpu_id_custom};
 pub use gpu_id::spoof_gpu_id;
+pub use network_stack::{spoof_network_stack, spoof_network_stack_custom};
 pub use pci_devices::hide_pci_devices;
 pub use registry_clean::clean_registry_artifacts;
 pub use wmi_spoof::hook_wmi_queries;

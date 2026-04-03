@@ -10,16 +10,25 @@ struct CpuidRegisters {
 }
 
 pub fn spoof_cpu_id() -> Result<()> {
+    spoof_cpu_id_custom(None, None, None, None)
+}
+
+pub fn spoof_cpu_id_custom(
+    brand_string: Option<String>,
+    family: Option<u32>,
+    model: Option<u32>,
+    stepping: Option<u32>,
+) -> Result<()> {
     println!("[cpu_id] ═══════════════════════════════════════════");
     println!("[cpu_id] CPU ID Spoof Initiated");
     println!("[cpu_id] ═══════════════════════════════════════════");
-    
+
     initialize_cpuid_hooks()?;
-    modify_processor_info()?;
-    modify_brand_string()?;
+    modify_processor_info_custom(family, model, stepping)?;
+    modify_brand_string_custom(brand_string)?;
     modify_cache_info()?;
     verify_cpuid_hooks()?;
-    
+
     println!("[cpu_id] ✓ CPUID spoof complete");
     Ok(())
 }
@@ -66,34 +75,38 @@ fn generate_hook_handler(leaf: u32) -> usize {
     }
 }
 
-fn modify_processor_info() -> Result<()> {
+fn modify_processor_info_custom(
+    custom_family: Option<u32>,
+    custom_model: Option<u32>,
+    custom_stepping: Option<u32>,
+) -> Result<()> {
     println!("[cpu_id] [CPUID] Modifying processor information");
-    
+
     use rand::Rng;
     let mut rng = rand::thread_rng();
-    
-    let family = 0x6;
-    let model = rng.gen_range(0x8E..=0xA5);
-    let stepping = rng.gen_range(0xA..=0xD);
-    
-    let processor_id = CpuidRegisters {
+
+    let family = custom_family.unwrap_or(0x6);
+    let model = custom_model.unwrap_or_else(|| rng.gen_range(0x8E..=0xA5));
+    let stepping = custom_stepping.unwrap_or_else(|| rng.gen_range(0xA..=0xD));
+
+    let _processor_id = CpuidRegisters {
         eax: ((family << 8) | (model << 4) | stepping) as u32,
         ebx: 0x00000800,
         ecx: 0xFFFA3203,
         edx: 0xBFEBFBFF,
     };
-    
+
     println!("[cpu_id] [CPUID] Family: 0x{:X}", family);
     println!("[cpu_id] [CPUID] Model: 0x{:X}", model);
     println!("[cpu_id] [CPUID] Stepping: 0x{:X}", stepping);
     println!("[cpu_id] [CPUID] ✓ Processor info modified");
-    
+
     Ok(())
 }
 
-fn modify_brand_string() -> Result<()> {
+fn modify_brand_string_custom(custom_brand: Option<String>) -> Result<()> {
     println!("[cpu_id] [CPUID] Modifying CPU brand string");
-    
+
     let brand_options = vec![
         "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
         "Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz",
@@ -101,17 +114,22 @@ fn modify_brand_string() -> Result<()> {
         "AMD Ryzen 7 3700X 8-Core Processor",
         "AMD Ryzen 5 5600X 6-Core Processor",
     ];
-    
-    use rand::seq::SliceRandom;
-    let brand = brand_options.choose(&mut rand::thread_rng()).unwrap();
-    
+
+    let brand: String = match custom_brand {
+        Some(b) => b,
+        None => {
+            use rand::seq::SliceRandom;
+            brand_options.choose(&mut rand::thread_rng()).unwrap().to_string()
+        }
+    };
+
     let brand_bytes = brand.as_bytes();
     for (i, chunk) in brand_bytes.chunks(16).enumerate() {
         let leaf = 0x80000002 + i as u32;
-        println!("[cpu_id] [CPUID] Leaf 0x{:08X}: {}", leaf, 
+        println!("[cpu_id] [CPUID] Leaf 0x{:08X}: {}", leaf,
             std::str::from_utf8(chunk).unwrap_or(""));
     }
-    
+
     println!("[cpu_id] [CPUID] ✓ Brand string: {}", brand);
     Ok(())
 }
