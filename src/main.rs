@@ -3,9 +3,11 @@
 // Usage: hwspoof.exe [config.json]
 //   - With no arguments: generates random HWIDs (original behavior)
 //   - With a config file: applies the exact HWIDs specified in the file
-//   - With --sample: prints a sample config JSON to stdout
+//   - With --sample: prints a sample config JSON with placeholder values
+//   - With --dump:   reads current system HWIDs and prints as JSON config
 
 mod config;
+mod dump;
 mod disk_serial;
 mod mac_address;
 mod motherboard;
@@ -30,6 +32,25 @@ fn main() {
 
     if args.len() > 1 && args[1] == "--sample" {
         println!("{}", HwidConfig::generate_sample());
+        return;
+    }
+
+    if args.len() > 1 && args[1] == "--dump" {
+        match dump::dump_current_hwids() {
+            Ok(config) => {
+                match serde_json::to_string_pretty(&config) {
+                    Ok(json) => println!("{}", json),
+                    Err(e) => {
+                        eprintln!("[dump] Failed to serialize: {}", e);
+                        std::process::exit(1);
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("[dump] Failed to read system HWIDs: {}", e);
+                std::process::exit(1);
+            }
+        }
         return;
     }
 

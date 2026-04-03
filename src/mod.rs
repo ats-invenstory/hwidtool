@@ -3,6 +3,7 @@
 
 // Core spoofing modules
 pub mod config;
+pub mod dump;
 pub mod disk_serial;
 pub mod mac_address;
 pub mod motherboard;
@@ -21,6 +22,7 @@ pub mod evasion;
 
 // Re-export commonly used functions for convenience
 pub use config::HwidConfig;
+pub use dump::dump_current_hwids;
 pub use disk_serial::{spoof_disk_serial, generate_disk_serial, verify_disk_spoof};
 pub use mac_address::{spoof_mac_address, generate_mac_address, list_network_adapters};
 pub use motherboard::{spoof_motherboard, generate_motherboard_serial, generate_system_uuid};
