@@ -32,7 +32,6 @@ pub use pci_devices::hide_pci_devices;
 pub use registry_clean::clean_registry_artifacts;
 pub use wmi_spoof::hook_wmi_queries;
 pub use volume_serial::spoof_volume_serial;
-pub use network_stack::spoof_network_stack;
 pub use bios_info::spoof_bios_info;
 pub use acpi_tables::inject_acpi_override;
 pub use driver_hooks::install_driver_hooks;

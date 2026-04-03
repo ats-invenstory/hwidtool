@@ -1,32 +1,37 @@
 // wmi_spoof.rs - WMI Query Manipulation
 use std::io::Result;
 
-pub fn hook_wmi_queries() -> Result<()> {
+pub fn hook_wmi_queries(intercept_classes: Option<Vec<String>>) -> Result<()> {
     println!("[wmi_spoof] Installing WMI hooks");
-    
-    hook_iwbem_services()?;
+
+    hook_iwbem_services(intercept_classes)?;
     cache_modified_results()?;
-    
+
     Ok(())
 }
 
-fn hook_iwbem_services() -> Result<()> {
+fn hook_iwbem_services(classes: Option<Vec<String>>) -> Result<()> {
     println!("[wmi_spoof] Hooking IWbemServices::ExecQuery");
-    
+
     // Hook COM interface
     let vtable_offset = 0x14; // ExecQuery method
-    
+
     println!("[wmi_spoof] VTable hook installed at offset {}", vtable_offset);
-    
-    // Intercept common queries
-    intercept_query("Win32_DiskDrive")?;
-    intercept_query("Win32_BaseBoard")?;
-    intercept_query("Win32_BIOS")?;
-    intercept_query("Win32_ComputerSystemProduct")?;
-    intercept_query("Win32_NetworkAdapter")?;
-    intercept_query("Win32_VideoController")?;
-    intercept_query("Win32_Processor")?;
-    
+
+    let default_classes = vec![
+        "Win32_DiskDrive", "Win32_BaseBoard", "Win32_BIOS",
+        "Win32_ComputerSystemProduct", "Win32_NetworkAdapter",
+        "Win32_VideoController", "Win32_Processor",
+    ];
+
+    let classes_to_hook: Vec<String> = classes.unwrap_or_else(||
+        default_classes.iter().map(|s| s.to_string()).collect()
+    );
+
+    for class in &classes_to_hook {
+        intercept_query(class)?;
+    }
+
     Ok(())
 }
 

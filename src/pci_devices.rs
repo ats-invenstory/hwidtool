@@ -1,13 +1,18 @@
 // pci_devices.rs - PCI Device Masking
 use std::io::Result;
 
-pub fn hide_pci_devices(device_ids: Vec<String>) -> Result<()> {
-    println!("[pci_devices] Hiding {} devices", device_ids.len());
-    
-    for device in &device_ids {
+pub fn hide_pci_devices(device_ids: Option<Vec<String>>) -> Result<()> {
+    let devices = device_ids.unwrap_or_else(|| vec![
+        "PCI\\VEN_15AD".to_string(),  // VMware
+        "PCI\\VEN_80EE".to_string(),  // VirtualBox
+    ]);
+
+    println!("[pci_devices] Hiding {} devices", devices.len());
+
+    for device in &devices {
         hide_single_device(device)?;
     }
-    
+
     hook_setupdi_apis()?;
     Ok(())
 }

@@ -34,31 +34,31 @@ pub fn generate_uuid() -> String {
 }
 
 #[cfg(windows)]
-pub fn spoof_system_uuid(uuid: Option<String>) -> Result<()> {
+pub fn spoof_system_uuid(uuid: Option<String>, product_id: Option<String>) -> Result<()> {
     let new_uuid = uuid.unwrap_or_else(generate_uuid);
-    
+
     println!("[system_uuid] ═══════════════════════════════════════════");
     println!("[system_uuid] System UUID Spoof Initiated");
     println!("[system_uuid] Target UUID: {}", new_uuid);
     println!("[system_uuid] ═══════════════════════════════════════════");
-    
+
     backup_uuid_configuration()?;
-    
+
     modify_machine_guid(&new_uuid)?;
     modify_hardware_id(&new_uuid)?;
     modify_profile_guid(&new_uuid)?;
-    modify_product_id(&new_uuid)?;
+    modify_product_id(&new_uuid, product_id.as_deref())?;
     modify_smbios_uuid(&new_uuid)?;
     modify_crypto_keys(&new_uuid)?;
-    
+
     verify_uuid_propagation(&new_uuid)?;
-    
+
     println!("[system_uuid] ✓ UUID spoof complete");
     Ok(())
 }
 
 #[cfg(not(windows))]
-pub fn spoof_system_uuid(_uuid: Option<String>) -> Result<()> {
+pub fn spoof_system_uuid(_uuid: Option<String>, _product_id: Option<String>) -> Result<()> {
     Err(Error::new(ErrorKind::Unsupported, "Windows only"))
 }
 
@@ -113,10 +113,9 @@ fn modify_hardware_id(uuid: &str) -> Result<()> {
     
     let hardware_id = format!("{{{}}}", uuid);
     set_registry_value("SYSTEM\\CurrentControlSet\\Control\\SystemInformation", "ComputerHardwareId", &hardware_id)?;
-    
-    // Also set SystemProductName
-    set_registry_value("SYSTEM\\CurrentControlSet\\Control\\SystemInformation", "SystemProductName", "Default").ok();
-    
+
+    // SystemProductName is handled by motherboard.rs with configurable value
+
     println!("[system_uuid] [REGISTRY] ✓ Hardware ID updated");
     Ok(())
 }
@@ -131,21 +130,24 @@ fn modify_profile_guid(uuid: &str) -> Result<()> {
     Ok(())
 }
 
-fn modify_product_id(uuid: &str) -> Result<()> {
+fn modify_product_id(uuid: &str, configured_product_id: Option<&str>) -> Result<()> {
     println!("[system_uuid] [REGISTRY] Modifying ProductId");
-    
-    // Generate product ID from UUID
-    let product_id = uuid_to_product_id(uuid);
+
+    let product_id = uuid_to_product_id(uuid, configured_product_id);
     set_registry_value("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ProductId", &product_id)?;
-    
-    println!("[system_uuid] [REGISTRY] ✓ Product ID updated");
+
+    println!("[system_uuid] [REGISTRY] ✓ Product ID updated: {}", product_id);
     Ok(())
 }
 
-fn uuid_to_product_id(uuid: &str) -> String {
+fn uuid_to_product_id(_uuid: &str, configured: Option<&str>) -> String {
+    if let Some(pid) = configured {
+        return pid.to_string();
+    }
+
     use rand::Rng;
     let mut rng = rand::thread_rng();
-    
+
     format!("{:05}-{:05}-{:05}-{:05}",
         rng.gen_range(10000..99999),
         rng.gen_range(10000..99999),

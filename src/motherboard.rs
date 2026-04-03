@@ -22,7 +22,7 @@ pub fn generate_motherboard_serial(manufacturer: Option<&str>) -> String {
         Some("MSI") => format!("MS-{:04X}", rng.gen::<u16>()),
         Some("Dell") => format!(".{:07X}.", rng.gen::<u32>()),
         Some("Gigabyte") => format!("GB-{:08X}", rng.gen::<u32>()),
-        _ => "Default_string".to_string(),
+        _ => format!("MB{:010}", rng.gen::<u32>()),
     }
 }
 
@@ -41,25 +41,35 @@ pub fn generate_system_uuid() -> String {
 }
 
 #[cfg(windows)]
-pub fn spoof_motherboard(new_serial: Option<String>, new_uuid: Option<String>) -> Result<()> {
+pub fn spoof_motherboard(
+    new_serial: Option<String>,
+    new_uuid: Option<String>,
+    manufacturer: Option<String>,
+    product_name: Option<String>,
+) -> Result<()> {
     let serial = new_serial.unwrap_or_else(|| generate_motherboard_serial(None));
     let uuid = new_uuid.unwrap_or_else(generate_system_uuid);
-    
+
     println!("[motherboard] Spoofing to serial: {}, UUID: {}", serial, uuid);
-    
+
     backup_smbios_data()?;
     install_smbios_driver(&serial, &uuid)?;
     hook_firmware_table_api(&serial, &uuid)?;
-    modify_system_registry(&serial, &uuid)?;
+    modify_system_registry(&serial, &uuid, manufacturer.as_deref(), product_name.as_deref())?;
     hook_wmi_baseboard_queries(&serial, &uuid)?;
-    
+
     println!("[motherboard] Spoof complete - restart required");
-    
+
     Ok(())
 }
 
 #[cfg(not(windows))]
-pub fn spoof_motherboard(_new_serial: Option<String>, _new_uuid: Option<String>) -> Result<()> {
+pub fn spoof_motherboard(
+    _new_serial: Option<String>,
+    _new_uuid: Option<String>,
+    _manufacturer: Option<String>,
+    _product_name: Option<String>,
+) -> Result<()> {
     Err(Error::new(ErrorKind::Unsupported, "Windows only"))
 }
 
@@ -260,50 +270,46 @@ fn parse_uuid_to_bytes(uuid_str: &str, buffer: &mut [u8; 16]) -> Result<()> {
     Ok(())
 }
 
-fn modify_system_registry(serial: &str, uuid: &str) -> Result<()> {
+fn modify_system_registry(serial: &str, uuid: &str, manufacturer: Option<&str>, product_name: Option<&str>) -> Result<()> {
     println!("[motherboard] Modifying system registry");
-    
+
+    let mfr = manufacturer.unwrap_or("ASUSTeK COMPUTER INC.");
+    let prod = product_name.unwrap_or("PRIME Z390-A");
+
     #[cfg(windows)]
     unsafe {
         use std::os::windows::ffi::OsStrExt;
         use std::ffi::OsStr;
-        
+
         let bios_path: Vec<u16> = OsStr::new("HARDWARE\\DESCRIPTION\\System\\BIOS")
             .encode_wide()
             .chain(Some(0))
             .collect();
-        
+
         let mut hkey = null_mut();
         if RegOpenKeyExW(HKEY_LOCAL_MACHINE, bios_path.as_ptr(), 0, KEY_WRITE, &mut hkey) == 0 {
-            // BaseBoardManufacturer
-            set_registry_value(hkey, "BaseBoardManufacturer", "Default")?;
-            
-            // BaseBoardProduct
-            set_registry_value(hkey, "BaseBoardProduct", "Default")?;
-            
-            // SystemSerialNumber
+            set_registry_value(hkey, "BaseBoardManufacturer", mfr)?;
+            set_registry_value(hkey, "BaseBoardProduct", prod)?;
             set_registry_value(hkey, "SystemSerialNumber", serial)?;
-            
-            // SystemUUID
             set_registry_value(hkey, "SystemUUID", uuid)?;
-            
+
             RegCloseKey(hkey);
         }
-        
+
         // Modify SystemInformation
         let sysinfo_path: Vec<u16> = OsStr::new("SYSTEM\\CurrentControlSet\\Control\\SystemInformation")
             .encode_wide()
             .chain(Some(0))
             .collect();
-        
+
         let mut info_hkey = null_mut();
         if RegOpenKeyExW(HKEY_LOCAL_MACHINE, sysinfo_path.as_ptr(), 0, KEY_WRITE, &mut info_hkey) == 0 {
             set_registry_value(info_hkey, "ComputerHardwareId", uuid)?;
-            set_registry_value(info_hkey, "SystemProductName", "Default")?;
+            set_registry_value(info_hkey, "SystemProductName", prod)?;
             RegCloseKey(info_hkey);
         }
     }
-    
+
     Ok(())
 }
 

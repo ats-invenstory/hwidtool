@@ -93,19 +93,24 @@ fn apply_hwid_config(config: &HwidConfig) -> Result<()> {
     // 3. System UUID
     if let Some(ref sys_uuid) = config.system_uuid {
         println!("[main] Applying system UUID spoof...");
-        system_uuid::spoof_system_uuid(sys_uuid.uuid.clone())?;
+        system_uuid::spoof_system_uuid(sys_uuid.uuid.clone(), sys_uuid.product_id.clone())?;
     } else {
         println!("[main] Applying system UUID spoof (random)...");
-        system_uuid::spoof_system_uuid(None)?;
+        system_uuid::spoof_system_uuid(None, None)?;
     }
 
     // 4. Motherboard
     if let Some(ref mb) = config.motherboard {
         println!("[main] Applying motherboard spoof...");
-        motherboard::spoof_motherboard(mb.serial.clone(), mb.uuid.clone())?;
+        motherboard::spoof_motherboard(
+            mb.serial.clone(),
+            mb.uuid.clone(),
+            mb.manufacturer.clone(),
+            mb.product_name.clone(),
+        )?;
     } else {
         println!("[main] Applying motherboard spoof (random)...");
-        motherboard::spoof_motherboard(None, None)?;
+        motherboard::spoof_motherboard(None, None, None, None)?;
     }
 
     // 5. CPU ID
@@ -152,24 +157,43 @@ fn apply_hwid_config(config: &HwidConfig) -> Result<()> {
     // 9. Network Stack
     if let Some(ref net) = config.network {
         println!("[main] Applying network stack spoof...");
-        network_stack::spoof_network_stack_custom(net.hostname.clone())?;
+        network_stack::spoof_network_stack_custom(
+            net.hostname.clone(),
+            net.domain_name.clone(),
+            net.dhcp_hostname.clone(),
+            net.netbios_name.clone(),
+        )?;
     } else {
         println!("[main] Applying network stack spoof (random)...");
         network_stack::spoof_network_stack()?;
     }
 
-    // 10. Additional operations (always run)
+    // 10. ACPI Tables
+    if let Some(ref acpi) = config.acpi {
+        println!("[main] Applying ACPI table overrides...");
+        acpi_tables::inject_acpi_override(acpi.oem_id.clone(), acpi.oem_table_id.clone())?;
+    } else {
+        println!("[main] Applying ACPI table overrides (default)...");
+        acpi_tables::inject_acpi_override(None, None)?;
+    }
+
+    // 11. Registry cleanup
     println!("[main] Cleaning registry artifacts...");
     registry_clean::clean_registry_artifacts()?;
 
+    // 12. PCI device hiding
     println!("[main] Hiding PCI devices...");
-    pci_devices::hide_pci_devices()?;
+    let pci_devices_list = config.pci_hide.as_ref().map(|p| p.device_ids.clone());
+    pci_devices::hide_pci_devices(pci_devices_list)?;
 
+    // 13. Driver hooks
     println!("[main] Installing driver hooks...");
     driver_hooks::install_driver_hooks()?;
 
+    // 14. WMI hooks
     println!("[main] Hooking WMI queries...");
-    wmi_spoof::hook_wmi_queries()?;
+    let wmi_classes = config.wmi.as_ref().and_then(|w| w.intercept_classes.clone());
+    wmi_spoof::hook_wmi_queries(wmi_classes)?;
 
     Ok(())
 }
