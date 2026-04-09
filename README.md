@@ -1,167 +1,192 @@
-# HWID Tool - Hardware Identifier Management Utility
+# HWID Tool - Hardware Identifier Testing Utility
 
-## Overview
-A Rust-based hardware identifier management tool designed for privacy-conscious gamers and developers. This utility allows users to modify system identifiers while maintaining **0/70 detections on VirusTotal**, demonstrating clean code practices and legitimate system interaction methods. Created as a proof-of-concept for hardware privacy.
+A Rust-based tool for white-hat security testing of HWID-based authentication systems. Allows you to specify exact hardware identifiers via a JSON config file to test how client software validates hardware fingerprints.
 
-## 🔍 Security Verification
-**Status: 0/70 Detections (Clean)**
-- **VirusTotal Report**: [View Analysis](https://www.virustotal.com/gui/file/c1e16a1d5ffaef5835e343862520062a118ebf815fe37ab6beac92390881b9bb/detection)
-- **SHA-256**: `c1e16a1d5ffaef5835e343862520062a118ebf815fe37ab6beac92390881b9bb`
-- **File Size**: 18.821 MB (x64 only)
-- **Detection Rate**: Exceptionally low due to proper Rust coding and compilation standards, our private modules are very sophisticated.
+## Requirements
 
-## 🚀 Capabilities
+- **OS**: Windows 10 (1909+) or Windows 11, x64 only
+- **Permissions**: Must run as Administrator (right-click > Run as administrator)
+- **Build tools**: Rust toolchain + Visual Studio C++ build tools
 
-### Hardware Identifier Management
-- **System ID Adjustment**: Modifies hardware identifiers at multiple system layers
-- **Network Identifier Randomization**: Updates MAC addresses across all adapters
-- **Storage Serial Management**: Handles GPT/MBR disk identifiers with driver-level access
-- **Component ID Configuration**: Manages GPU, CPU, and motherboard identifiers
-- **Registry Management**: System-level registry modifications for ID persistence
-
-### Compatibility Testing
-Tested in various environments including:
-- **EasyAntiCheat** environments (Fortnite, Apex Legends, Rust)
-- **Vanguard** systems (will likely require additional configuration)
-- **BattlEye** protected titles (Rainbow Six Siege, Escape from Tarkov, PUBG)
-- **Ricochet** implementations (Call of Duty series)
-- **FACEIT** and other competitive platforms (variable success rates)
-
-### Technical Architecture
-- **Language**: Rust with direct system bindings
-- **Distribution**: Statically linked, zero runtime dependencies
-- **Operation**: Kernel-level access, WMI integration, registry management
-- **Persistence Model**: Single execution pattern, no resident processes
-
-## 🛠️ Technical Implementation
-
-### System Integration Layers
-1. **WMI Interface**: Communicates with Win32_DiskDrive, Win32_BaseBoard, Win32_BIOS classes
-2. **Registry Layer**: Direct HKLM modifications for system identifier management
-3. **Driver Integration**: Kernel-level access for persistent storage modifications
-4. **Network Stack**: NDIS layer integration for adapter configuration
-5. **PCI System**: Hardware descriptor management via SetupAPI
-6. **Evasion Techniques**: Advanced pattern management (compiled components)
-
-### Development Philosophy
-Core management logic remains open-source on GitHub, while advanced system integration techniques stay compiled to maintain effectiveness against detection systems. This balanced approach allows community auditing while preserving operational integrity.
-
-## 📥 Installation & Usage
-
-### Recommended Source
-**For optimal compatibility and verification:**
-- **[hwidspoof.net](https://hwidspoof.net)** - Official distribution with verified checksums
-- **Security Note**: Avoid third-party distributions to ensure file integrity
-
-### Alternative Access
-- [GitHub Releases](https://github.com/hwspf/hwidtool/releases) - Source components and documentation
-- Compiled binaries include both open and proprietary modules
-
-### Compilation Considerations
-**This project requires specialized build environments due to:**
-- Complex Cargo dependency graphs
-- Custom build toolchains and scripts
-- Advanced Rust feature requirements
-- Specific compiler optimization profiles
-- Multiple private code repositories
-
-Unless experienced with Rust ecosystem and Windows driver development, pre-compiled binaries are recommended.
-
-### Usage Protocol
-1. **Acquire** the latest build from [hwidspoof.net](https://hwidspoof.net)
-2. **Execute** the application
-3. **Load configuration** via the interface
-4. **Apply modifications** through the management interface
-5. **System restart** for full identifier propagation
-6. **Verification** using standard system information tools
-
-## 🔍 Project Components
-
-### Open Source (MIT Licensed)
-- Core hardware management framework
-- Network adapter randomization modules
-- Registry management utilities
-- Basic driver interface implementations
-- WMI integration framework
-- Configuration management system
-
-### Compiled Components
-- Advanced pattern management systems
-- Kernel protection system integration
-- Temporal algorithm implementations
-- Debug/VM environment detection systems
-- Signature management techniques
-- Driver verification integration
-
-## ⚠️ Important Considerations
-
-### System Requirements
-- **Operating System**: Windows 10 (1909+) or Windows 11 (64-bit)
-- **Architecture**: x64 exclusively
-- **Runtime**: None required (statically compiled)
-- **Permissions**: Administrative privileges for system-level operations
-
-### Security Notes
-- Some security software may flag system modification tools generically
-- Windows Defender may require exception configuration for operation
-- Always verify file integrity using provided SHA-256 checksums
-- Execute only from trusted sources and original distributions
-- Current detection rates remain exceptionally low due to proper coding standards
-
-### Responsible Usage
-Developed by gamers for privacy and hardware management. Intended for:
-- Hardware privacy management
-- System identifier research and development
-- Educational purposes in system programming
-- Hardware access restoration scenarios
-
-We encourage responsible use that respects gaming ecosystems while protecting user hardware autonomy.
-
-## 📊 Technical Specifications
-
-### Build Configuration
-```toml
-[package]
-name = "hardwaretool"
-version = "1.4.2"
-edition = "2021"
+## Building
 
 ```
+cargo build --release
+```
 
-### Performance Characteristics
-- **Execution Time**: < 5 seconds for full configuration (including load time)
-- **Memory Footprint**: < 50 MB during active operation
-- **Persistence Model**: Non-resident after execution completion
-- **System Impact**: Targeted registry modifications only
+Binary output: `target\release\hwspoof.exe`
 
-## 🤝 Contribution Guidelines
-Open source components welcome community input through:
-- Issue reporting for public modules
-- Documentation improvements and translations
-- Build system enhancements
-- Cross-platform compatibility adjustments
+## Usage
 
-Advanced system integration components remain proprietary to maintain effectiveness against detection systems.
+**Always run as Administrator.** The tool modifies `HKEY_LOCAL_MACHINE` registry keys and uses IOCTLs that require elevation.
 
-## 📄 Licensing Information
-- **Core Framework**: MIT License (GitHub repository)
-- **Advanced Components**: Proprietary distribution rights
-- **Binary Distribution**: Free for personal, non-commercial use
+### Step 1: Dump current HWIDs (do this FIRST)
 
-## 🔗 Resources
-- **Official Site**: [hwidspoof.net](https://hwidspoof.net)
-- **GitHub Repository**: [github.com/hwspf/hwidtool/](https://github.com/hwspf/hwidtool/)
-- **Security Analysis**: [VirusTotal Report](https://www.virustotal.com/gui/file/c1e16a1d5ffaef5835e343862520062a118ebf815fe37ab6beac92390881b9bb/detection)
-- **Support Contact**: message@hwidspoof.net
+Before making any changes, capture the machine's current hardware IDs so you have a backup and a baseline:
 
-## ⚡ Quick Configuration
-For straightforward hardware management:
-1. Visit [hwidspoof.net](https://hwidspoof.net)
-2. Download the latest release build
-3. Execute, load configuration profile
-4. System restart for changes to propagate
-5. Hardware identifiers are now managed according to configuration
+```
+hwspoof.exe --dump > original_hwids.json
+```
 
----
+This reads all hardware identifiers from the running system and saves them as a JSON config file. Keep this file safe — you'll need it to restore original values.
 
-*Developed by hardware privacy advocates. Open where practical, effective where needed.*
+### Step 2: Create your test config
+
+Either edit the dumped file, or generate a blank template:
+
+```
+hwspoof.exe --sample > template.json
+```
+
+Edit the JSON to set the exact HWIDs you want to test with. You can include only the sections you need — omit any section to skip that component entirely.
+
+### Step 3: Apply the config
+
+```
+hwspoof.exe your_config.json
+```
+
+This writes the specified hardware IDs to the system. A reboot is recommended for full propagation.
+
+### Step 4: Restore original HWIDs
+
+When you're done testing, apply your backup to restore the original values:
+
+```
+hwspoof.exe original_hwids.json
+```
+
+Reboot after restoring.
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `hwspoof.exe config.json` | Apply HWIDs from the specified config file |
+| `hwspoof.exe --dump` | Read current system HWIDs and print as JSON |
+| `hwspoof.exe --sample` | Print a sample config template with example values |
+| `hwspoof.exe` | Show usage help (does nothing to the system) |
+
+## Config File Reference
+
+All fields are optional. Omit a section entirely to skip that component.
+
+```json
+{
+  "disk": {
+    "drive_index": 0,
+    "serial": "WD-WCC7K0EXAMPLE01"
+  },
+  "mac": {
+    "adapter_name": "Ethernet",
+    "address": "00:1B:21:AB:CD:EF"
+  },
+  "system_uuid": {
+    "uuid": "550E8400-E29B-41D4-A716-446655440000",
+    "product_id": "00330-80000-00000-AA123"
+  },
+  "motherboard": {
+    "serial": "MB-0012345678",
+    "uuid": "A1B2C3D4-E5F6-4789-ABCD-EF0123456789",
+    "manufacturer": "ASUSTeK COMPUTER INC.",
+    "product_name": "PRIME Z390-A"
+  },
+  "cpu": {
+    "brand_string": "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+    "family": 6,
+    "model": 158,
+    "stepping": 10
+  },
+  "gpu": {
+    "vendor_id": 4318,
+    "device_id": 8708
+  },
+  "volume": {
+    "drive_letter": "C",
+    "serial": 2882343476
+  },
+  "bios": {
+    "vendor": "American Megatrends Inc.",
+    "version": "1.50",
+    "date": "01/01/2023"
+  },
+  "network": {
+    "hostname": "DESKTOP-ABC1234",
+    "domain_name": "WORKGROUP",
+    "dhcp_hostname": "DESKTOP-ABC1234",
+    "netbios_name": "DESKTOP-ABC123"
+  },
+  "acpi": {
+    "oem_id": "ALASKA",
+    "oem_table_id": "A M I  "
+  },
+  "pci_hide": {
+    "device_ids": ["PCI\\VEN_15AD", "PCI\\VEN_80EE"]
+  },
+  "wmi": {
+    "intercept_classes": [
+      "Win32_DiskDrive",
+      "Win32_BaseBoard",
+      "Win32_BIOS",
+      "Win32_ComputerSystemProduct",
+      "Win32_NetworkAdapter",
+      "Win32_VideoController",
+      "Win32_Processor"
+    ]
+  }
+}
+```
+
+## Config Fields Explained
+
+### Where to find values on a target machine
+
+| Field | Command to query |
+|---|---|
+| `disk.serial` | `wmic diskdrive get serialnumber` |
+| `mac.adapter_name` | `netsh interface show interface` |
+| `mac.address` | `getmac /v` |
+| `system_uuid.uuid` | `wmic csproduct get uuid` |
+| `system_uuid.product_id` | Registry: `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProductId` |
+| `motherboard.serial` | `wmic baseboard get serialnumber` |
+| `motherboard.manufacturer` | `wmic baseboard get manufacturer` |
+| `motherboard.product_name` | `wmic baseboard get product` |
+| `cpu.brand_string` | `wmic cpu get name` |
+| `cpu.family` | `wmic cpu get family` |
+| `cpu.model` | `wmic cpu get model` |
+| `cpu.stepping` | `wmic cpu get stepping` |
+| `gpu.vendor_id` | Device Manager > GPU > Hardware IDs (`VEN_XXXX`, convert hex to decimal) |
+| `gpu.device_id` | Device Manager > GPU > Hardware IDs (`DEV_XXXX`, convert hex to decimal) |
+| `volume.serial` | `vol C:` (convert hex serial to decimal) |
+| `bios.vendor` | `wmic bios get manufacturer` |
+| `bios.version` | `wmic bios get smbiosbiosversion` |
+| `bios.date` | `wmic bios get releasedate` |
+| `network.hostname` | `hostname` |
+| `network.netbios_name` | Max 15 characters |
+
+### Notes
+
+- `gpu.vendor_id` and `gpu.device_id` are **decimal** integers in the JSON (e.g., NVIDIA `0x10DE` = `4318`, RTX 3090 `0x2204` = `8708`)
+- `volume.serial` is a **decimal** u32 (e.g., `ABCD-1234` hex = `2882343476` decimal)
+- `network.netbios_name` is truncated to 15 characters per the NetBIOS spec
+- `acpi.oem_id` is max 6 characters, `acpi.oem_table_id` is max 8 characters
+
+## Typical Workflow
+
+```
+REM 1. On the target machine, dump its HWIDs
+hwspoof.exe --dump > target_machine.json
+
+REM 2. On your test machine, dump originals as backup
+hwspoof.exe --dump > my_original.json
+
+REM 3. Apply the target machine's identity
+hwspoof.exe target_machine.json
+
+REM 4. Reboot, then test the client's software
+
+REM 5. When done, restore your originals
+hwspoof.exe my_original.json
+
+REM 6. Reboot to finalize restoration
+```
