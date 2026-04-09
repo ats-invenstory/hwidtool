@@ -21,7 +21,7 @@ FileVersion = "1.4.2.0"
 [dependencies]
 iced = { version = "0.12", features = ["image", "tokio"] }
 tokio = { version = "1", features = ["full"] }
-winapi = { version = "0.3", features = ["winuser", "winnt", "processthreadsapi", "memoryapi", "sysinfoapi", "winreg", "debugapi", "shellapi"] }
+winapi = { version = "0.3", features = ["winuser", "winnt", "processthreadsapi", "memoryapi", "sysinfoapi", "winreg", "debugapi", "shellapi", "ioapiset", "fileapi", "handleapi", "winsvc"] }
 sysinfo = "0.30"
 rand = "0.8"
 chrono = "0.4"
