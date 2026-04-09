@@ -9,7 +9,7 @@ use std::mem;
 #[cfg(windows)]
 use winapi::um::winreg::{RegOpenKeyExW, RegSetValueExW, RegCloseKey, HKEY_LOCAL_MACHINE};
 #[cfg(windows)]
-use winapi::um::winnt::{KEY_WRITE, KEY_READ, REG_SZ, REG_BINARY};
+use winapi::um::winnt::{KEY_WRITE, KEY_READ, REG_SZ, REG_BINARY, DELETE, SERVICE_KERNEL_DRIVER, SERVICE_DEMAND_START, SERVICE_ERROR_NORMAL};
 #[cfg(windows)]
 use winapi::shared::minwindef::DWORD;
 
@@ -480,7 +480,7 @@ fn unload_smbios_driver() -> Result<()> {
                 .chain(Some(0))
                 .collect();
             
-            let service = OpenServiceW(sc_manager, service_name.as_ptr(), SERVICE_STOP | winapi::um::winsvc::DELETE);
+            let service = OpenServiceW(sc_manager, service_name.as_ptr(), SERVICE_STOP | DELETE);
             
             if !service.is_null() {
                 let mut status: SERVICE_STATUS = mem::zeroed();
