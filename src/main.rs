@@ -66,9 +66,15 @@ fn main() {
             }
         }
     } else {
-        println!("[main] No config file specified, using random HWIDs");
-        println!("[main] Use --sample to generate a sample config file");
-        HwidConfig::default()
+        println!("HWID Spoofer - Hardware ID Testing Tool");
+        println!();
+        println!("Usage: hwspoof.exe <config.json>   Apply HWIDs from config file");
+        println!("       hwspoof.exe --dump           Read current system HWIDs as JSON");
+        println!("       hwspoof.exe --sample         Print sample config template");
+        println!();
+        println!("WARNING: Never run without a config file. Always use --dump first");
+        println!("         to capture original HWIDs before making changes.");
+        return;
     };
 
     // Run anti-analysis checks
