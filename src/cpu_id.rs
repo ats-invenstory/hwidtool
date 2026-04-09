@@ -155,7 +155,7 @@ fn modify_cache_info() -> Result<()> {
 fn verify_cpuid_hooks() -> Result<()> {
     println!("[cpu_id] [VERIFY] Verifying CPUID hooks");
     
-    let test_leaves = vec![0x00000001, 0x80000002, 0x80000003, 0x80000004];
+    let test_leaves: Vec<u32> = vec![0x00000001, 0x80000002, 0x80000003, 0x80000004];
     
     for leaf in test_leaves {
         println!("[cpu_id] [VERIFY] ✓ Leaf 0x{:08X} responding", leaf);
